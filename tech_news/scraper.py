@@ -1,6 +1,7 @@
 import requests
 import time
 from bs4 import BeautifulSoup
+import re
 
 
 # Requisito 1
@@ -41,7 +42,25 @@ def scrape_next_page_link(html_content):
 
 # Requisito 4
 def scrape_news(html_content):
-    """Seu código deve vir aqui"""
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    url = soup.find("link", {"rel": "canonical"})
+    title = soup.find("h1", {"class": "entry-title"})
+    timestamp = soup.find("li", {"class": "meta-date"})
+    writer = soup.find("span", {"class": "author"}).find("a")
+    reading_time = soup.find("li", {"class": "meta-reading-time"})
+    summary = soup.find("div", {"class": "entry-content"}).find_all("p")
+    category = soup.find("a", {"class": "category-style"}).find_all("span")
+
+    return {
+        "url": url["href"],
+        "title": title.text.strip(),
+        "timestamp": timestamp.text,
+        "writer": writer.text,
+        "reading_time": int(re.search(r'\d+', reading_time.text).group()),
+        "summary": summary[0].text.strip(),
+        "category": category[1].text,
+    }
 
 
 # Requisito 5
